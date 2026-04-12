@@ -2,22 +2,26 @@ package az.edu.ada.wm2.building_robust_apis.exception;
 
 import az.edu.ada.wm2.building_robust_apis.model.ErrorResponseDto;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
-    // @ResponseStatus(HttpStatus.BAD_REQUEST)
+//    @ResponseStatus(HttpStatus.BAD_REQUEST)
 //    @ExceptionHandler(MethodArgumentNotValidException.class)
 //    public ResponseEntity<?> handleValidationException(
 //            MethodArgumentNotValidException ex) {
+//
 //        List<String> errors = ex.getBindingResult()
 //                .getFieldErrors().stream()
 //                .map(err -> err.getField() + ": " + err.getDefaultMessage())
@@ -25,6 +29,7 @@ public class GlobalExceptionHandler {
 //
 //        return ResponseEntity.badRequest().body(errors);
 //    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponseDto> handleValidation(
             MethodArgumentNotValidException ex,
@@ -44,6 +49,8 @@ public class GlobalExceptionHandler {
                 .details(errors)
                 .build();
 
+        log.error("ActionLog: Validation error: {}", error.toString());
+
         return ResponseEntity.badRequest().body(error);
     }
 
@@ -60,14 +67,17 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponseDto> handleStudentNotFound(
             StudentNotFoundException ex, HttpServletRequest request) {
 
+        var error = ErrorResponseDto.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.NOT_FOUND.value())
+                .error(HttpStatus.NOT_FOUND.getReasonPhrase())
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .build();
+
+        log.error("ActionLog: StudentNotFoundException: {}", error.toString());
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                ErrorResponseDto.builder()
-                        .timestamp(LocalDateTime.now())
-                        .status(HttpStatus.NOT_FOUND.value())
-                        .error(HttpStatus.NOT_FOUND.getReasonPhrase())
-                        .message(ex.getMessage())
-                        .path(request.getRequestURI())
-                        .build());
+                error);
     }
 }

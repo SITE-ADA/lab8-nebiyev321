@@ -1,3 +1,7 @@
 spring:
   application:
     name: building-robust-apis
+
+logging:
+  level:
+    root: INFO
