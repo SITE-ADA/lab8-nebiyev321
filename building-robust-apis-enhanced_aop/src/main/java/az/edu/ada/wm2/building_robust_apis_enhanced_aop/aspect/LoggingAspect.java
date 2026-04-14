@@ -27,6 +27,8 @@ public class LoggingAspect {
     public void controllerLayer() {
     }
 
+    //GlobalExceptionHandler methods can log themselves
+    //So better use the logs inside GlobalExceptionHandler
     @Pointcut("within(az.edu.ada.wm2.building_robust_apis_enhanced_aop.exception..*)")
     public void exceptionLayer() {
     }
@@ -98,28 +100,12 @@ public class LoggingAspect {
         long start = System.currentTimeMillis();
 
         try {
-            Object result = joinPoint.proceed();
+            return joinPoint.proceed();
+        } finally {
             long time = System.currentTimeMillis() - start;
-
-            log.info(
-                    "Execution of {} took {} ms",
+            log.info("Execution of {} took {} ms",
                     joinPoint.getSignature().toShortString(),
-                    time
-            );
-
-            return result;
-        } catch (Throwable ex) {
-            long time = System.currentTimeMillis() - start;
-
-            log.error(
-                    "Execution of {} failed after {} ms with message: {}",
-                    joinPoint.getSignature().toShortString(),
-                    time,
-                    ex.getMessage(),
-                    ex
-            );
-
-            throw ex;
+                    time);
         }
     }
 }

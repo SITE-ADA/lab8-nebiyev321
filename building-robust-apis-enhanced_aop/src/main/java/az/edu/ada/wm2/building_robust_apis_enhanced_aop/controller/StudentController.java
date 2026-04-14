@@ -1,5 +1,6 @@
 package az.edu.ada.wm2.building_robust_apis_enhanced_aop.controller;
 
+import az.edu.ada.wm2.building_robust_apis_enhanced_aop.annotation.TrackExecutionTime;
 import az.edu.ada.wm2.building_robust_apis_enhanced_aop.exception.StudentNotFoundException;
 import az.edu.ada.wm2.building_robust_apis_enhanced_aop.model.Student;
 import jakarta.validation.Valid;
@@ -24,6 +25,7 @@ public class StudentController {
     }
 
     @PostMapping
+    @TrackExecutionTime
     public Student create(@Valid @RequestBody Student s) {
         s.setId(UUID.randomUUID());
         //TODO
@@ -38,9 +40,10 @@ public class StudentController {
     }
 
     @DeleteMapping("/{id}")
+    @TrackExecutionTime
     public void delete(@PathVariable UUID id) {
         if(MISSING_ID_TO_REMOVE.equals(id)){
-            throw new StudentNotFoundException("Student not found with id" + id);
+            throw new RuntimeException("Student not found with id" + id);
         }
     }
 

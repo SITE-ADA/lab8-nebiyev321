@@ -36,6 +36,12 @@ public class GlobalExceptionHandler {
                 .details(errors)
                 .build();
 
+        log.warn(
+                "Validation failed for path {}. Errors: {}",
+                request.getRequestURI(),
+                errors
+        );
+
         return ResponseEntity.badRequest().body(error);
     }
 
@@ -51,7 +57,38 @@ public class GlobalExceptionHandler {
                 .path(request.getRequestURI())
                 .build();
 
+        log.error(
+                "StudentNotFoundException at path {}: {}",
+                request.getRequestURI(),
+                ex.getMessage()
+        );
+
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                 error);
+    }
+
+    //Generic fallback error handler
+    //in case none of the specific handlers catch the thrown exception
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<?> handleGenericException(
+            Exception ex,
+            HttpServletRequest request) {
+
+        ErrorResponseDto error = ErrorResponseDto.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .error(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
+                .message("Unexpected error occurred")
+                .path(request.getRequestURI())
+                .build();
+
+        log.error(
+                "Unexpected exception at path {}: {}",
+                request.getRequestURI(),
+                ex.getMessage(),
+                ex
+        );
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
     }
 }
