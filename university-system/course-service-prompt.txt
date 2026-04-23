@@ -1,0 +1,249 @@
+Generate a complete Spring Boot project (module :course-service) for a backend service called course-service under university-system.
+
+Goal:
+Create a Course Service application that provides CRUD operations for courses, connects to PostgreSQL database named courseDB, and includes a Dockerfile.
+
+This is for teaching backend development, so keep the code clean, simple, and beginner-friendly.
+
+The service must also communicate with student-service in two ways:
+1. When listing students enrolled in a course, use RestTemplate to call student-service over HTTP and retrieve the student details.
+2. When enrolling a student into a course, first validate that the course exists in courseDB, then validate that the student exists by calling student-service using Feign Client (GET by id).
+
+Make sure the root packaging is: az.edu.ada.wm2
+
+Technical requirements:
+- Java 25
+- Gradle
+- Spring Boot 4.x
+- Dependencies:
+  - spring-boot-starter-web
+  - spring-boot-starter-data-jpa
+  - postgresql
+  - lombok
+  - spring-boot-starter-validation
+  - spring-cloud-starter-openfeign
+  - springdoc-openapi-starter-webmvc-ui
+- Package name: {rootPackage}.courseservice
+
+Architecture:
+- model package
+    - entity package
+    - dto package
+- repository package
+- service package
+- controller package
+- client package
+- config package
+- exception package
+
+Functional requirements:
+
+1. Course CRUD
+Entity: Course
+Suggested fields:
+- Long id
+- String title
+- String code
+- Integer credits
+
+Use @Entity and JPA annotations properly.
+id should be auto-generated.
+
+Repository:
+- CourseRepository extends JpaRepository<Course, Long>
+
+Service:
+- methods for:
+  - createCourse
+  - getAllCourses
+  - getCourseById
+  - updateCourse
+  - deleteCourse
+
+Controller:
+- base path: /api/v1/courses
+- endpoints:
+  - POST /
+  - GET /
+  - GET /{id}
+  - PUT /{id}
+  - DELETE /{id}
+- return proper ResponseEntity and HTTP status codes
+
+2. Enrollment support
+The course-service must support enrollments between courses and students.
+
+You may implement enrollment in a simple teaching-friendly way using a separate Enrollment entity or a course_student table equivalent.
+
+Suggested Enrollment fields:
+- Long id
+- Long courseId
+- Long studentId
+
+Store only IDs in course-service database.
+Do NOT duplicate student data in course-service DB.
+
+Enrollment requirements:
+- A student can be enrolled into a course
+- A course can have many students
+- One student can be enrolled in many courses
+- Prevent duplicate enrollment of the same student into the same course
+
+Provide endpoints such as:
+- POST /api/v1/courses/{courseId}/students/{studentId}
+  -> enroll a student into a course
+- GET /api/v1/courses/{courseId}/students
+  -> list detailed student info for students enrolled in that course
+
+3. HTTP integration with student-service
+
+A. RestTemplate usage
+When calling:
+- GET /api/v1/courses/{courseId}/students
+
+The course-service should:
+- validate that the course exists in courseDB
+- retrieve all enrolled studentIds for that course from courseDB
+- for each studentId, call student-service using RestTemplate:
+  - GET /api/v1/students/{id}
+- collect the returned student details and return them as response
+
+Create:
+- a RestTemplate configuration class under config package
+- a DTO representing student data received from student-service
+
+B. Feign Client usage
+When calling:
+- POST /api/v1/courses/{courseId}/students/{studentId}
+
+The course-service should:
+- first check if the course exists in courseDB
+- then call student-service using Feign Client:
+  - GET /api/v1/students/{id}
+- if student exists, save the enrollment
+- if student does not exist, return a proper error response
+- if enrollment already exists, return a meaningful error response
+
+Create:
+- a Feign client interface under client package
+- annotate the application with @EnableFeignClients
+
+Student-service base URL:
+- make it configurable in application.properties
+- use a property such as:
+  student.service.base-url=http://localhost:8080
+
+Assume student-service endpoint:
+- GET /api/v1/students/{id}
+
+4. DTOs
+Use DTOs to keep the API beginner-friendly.
+
+Suggested DTOs:
+- CourseRequestDto
+- CourseResponseDto
+- EnrollmentResponseDto
+- StudentDto (for data retrieved from student-service)
+
+For listing course students, return:
+- course id
+- course title
+- list of StudentDto items
+
+5. Exception handling
+Create:
+- CourseNotFoundException
+- EnrollmentAlreadyExistsException
+- StudentServiceCommunicationException or similar
+- optional StudentNotFoundInRemoteServiceException if helpful
+
+Create a global exception handler using @RestControllerAdvice.
+
+Return a structured JSON error response with fields like:
+- timestamp
+- status
+- error
+- message
+- path
+
+Make sure:
+- there is Validation Error Handling
+- CourseNotFoundException handling
+- enrollment duplicate handling
+- remote student-service related handling
+	-RemoteStudentNotFoundException can be defined, and handled properly
+- fallback general Exception handling
+
+6. Validation
+Apply validation annotations where appropriate, such as:
+- title must not be blank
+- code must not be blank
+- credits must be positive
+
+7. Database configuration
+PostgreSQL database name: courseDB
+
+Provide application.properties using:
+- spring.datasource.url
+- spring.datasource.username
+- spring.datasource.password
+- spring.jpa.hibernate.ddl-auto=update
+- spring.jpa.show-sql=true
+
+Assume default DB credentials:
+- username=postgres
+- password=password
+
+8. Logging
+Use Lombok @Slf4j
+Make sure logging for HTTP integrations is enabled at DEBUG level.
+
+Set logging so that:
+- RestTemplate related HTTP activity is visible in debug logs
+- Feign client operations are visible in debug logs
+
+Configure application.properties appropriately, including DEBUG logging for Feign.
+
+Also include a Feign configuration bean if needed so request/response details are visible.
+
+If helpful, add service-level log messages around:
+- course lookup
+- student validation
+- enrollment creation
+- fetching enrolled students from student-service
+
+9. API documentation
+Enable swagger-ui for API documentation, including endpoint descriptions where reasonable.
+
+10. Docker
+Include a Dockerfile for the Spring Boot app (:course-service module)
+- use a jar-based Dockerfile
+- expose port 8081
+
+11. Docker Compose
+Include docker-compose.yml that starts:
+- course-service app
+- postgres database for course-service
+
+In docker-compose, configure the app to connect to postgres container by service name, not localhost.
+
+Also make student-service base URL configurable via environment variable, for example:
+- STUDENT_SERVICE_BASE_URL=http://student-service:8080
+
+12. Style expectations
+- keep code beginner-friendly
+- avoid advanced patterns
+- include short comments only where useful (do not overuse them)
+- ensure the generated code compiles consistently
+- output all files with paths and contents
+
+13. Important implementation notes
+- Keep the project easy to explain in class
+- Use separate packages clearly
+- Do not over-engineer
+- The purpose is to demonstrate:
+  - CRUD in course-service
+  - separate course database ownership
+  - consuming another backend using RestTemplate
+  - validating remote existence using Feign Client
+- Output a complete, compilable project

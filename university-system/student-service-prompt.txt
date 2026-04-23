@@ -1,0 +1,103 @@
+Generate a complete Spring Boot project for a backend service called student-service.
+
+Goal:
+Create a Student Service application that provides CRUD operations for students, connects to PostgreSQL database named studentDB, and includes a Dockerfile. This is for teaching backend development, so keep the code clean, simple, and beginner-friendly.
+make sure the root packaging is : az.edu.ada.wm2
+
+Technical requirements:
+- Java 25
+- Gradle
+- Spring Boot 4.x
+- Dependencies:
+  - spring-boot-starter-web
+  - spring-boot-starter-data-jpa
+  - postgresql
+  - lombok
+  - spring-boot-starter-validation
+- Package name: {rootPackage}.studentservice
+
+Functional requirements:
+- Entity: Student
+- Suggested fields:
+  - Long id
+  - String firstName
+  - String lastName
+  - String email
+  - Integer age
+- Use @Entity and JPA annotations properly
+- id should be auto-generated
+
+Architecture:
+- model package
+	- entity package
+	- dto package
+- repository package
+- service package
+- controller package
+- exception package
+
+Repository:
+- StudentRepository extends JpaRepository<Student, Long>
+
+Service:
+- methods for:
+  - createStudent
+  - getAllStudents
+  - getStudentById
+  - updateStudent
+  - deleteStudent
+
+Controller:
+- base path: /api/v1/students
+- endpoints:
+  - POST /
+  - GET /
+  - GET /{id}
+  - PUT /{id}
+  - DELETE /{id}
+- return proper ResponseEntity and HTTP status codes
+
+Exception handling:
+- create StudentNotFoundException
+- create a global exception handler using @RestControllerAdvice
+- return a structured JSON error response with fields like:
+  - timestamp
+  - status
+  - error
+  - message
+  - path
+Make sure: there is Validation Error Handling, StudentNotFoundException handling and fallback general ExceptionHandling.
+
+Database configuration:
+- PostgreSQL database name: studentDB
+- provide application.properties using:
+  - spring.datasource.url
+  - spring.datasource.username
+  - spring.datasource.password
+  - spring.jpa.hibernate.ddl-auto=update
+  - spring.jpa.show-sql=true
+
+Assume default DB credentials:
+- username=postgres
+- password=password
+
+API documentation
+- enable swagger-ui for API documentation (with the descriptions, etc)
+
+Docker:
+- include a Dockerfile for the Spring Boot app (:student-service module)
+- use a jar-based Dockerfile
+- expose port 8080
+
+Docker-compose:
+- include docker-compose.yml that starts:
+  - student-service app
+  - postgres database
+- in docker-compose, configure the app to connect to postgres container by service name, not localhost
+
+Style expectations:
+- keep code beginner-friendly
+- avoid advanced patterns
+- include short comments only where useful (do not overuse them)
+- ensure the generated code compiles consistently
+- output all files with paths and contents
