@@ -34,4 +34,5 @@ public class Enrollment {
 
     @Column(name = "student_id", nullable = false)
     private Long studentId;
+
 }
