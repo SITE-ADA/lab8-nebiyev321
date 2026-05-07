@@ -11,8 +11,9 @@ services:
       - student_postgres_data:/var/lib/postgresql/data
 
   student-service:
+    image: student-service
     build:
-      context: .
+      context: ./
       dockerfile: student-service/Dockerfile
     depends_on:
       - student-db
