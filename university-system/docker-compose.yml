@@ -9,6 +9,11 @@ services:
       - "5432:5432"
     volumes:
       - student_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d studentDB" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   student-service:
     image: student-service
@@ -37,8 +42,14 @@ services:
       - "5433:5432"
     volumes:
       - course_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d courseDB" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   course-service:
+    image: course-service
     build:
       context: ./
       dockerfile: course-service/Dockerfile
