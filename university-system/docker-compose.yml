@@ -40,7 +40,7 @@ services:
 
   course-service:
     build:
-      context: .
+      context: ./
       dockerfile: course-service/Dockerfile
     depends_on:
       - course-db
