@@ -6,7 +6,6 @@ plugins {
 
 group = 'az.edu.ada.wm2'
 version = '0.0.1-SNAPSHOT'
-description = 'student-service'
 
 java {
     toolchain {
@@ -22,24 +21,17 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
+
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0'
-    implementation 'com.h2database:h2'
-    runtimeOnly 'org.postgresql:postgresql'
+
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
+
+    runtimeOnly 'com.h2database:h2'
+
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testCompileOnly 'org.projectlombok:lombok'
-    testAnnotationProcessor 'org.projectlombok:lombok'
 }
 
 tasks.named('test') {
     useJUnitPlatform()
-}
-
-// Some IDE integrations invoke this task even for Groovy DSL projects.
-if (tasks.findByName('prepareKotlinBuildScriptModel') == null) {
-    tasks.register('prepareKotlinBuildScriptModel') {
-        group = 'ide'
-        description = 'Compatibility task for IDE Gradle sync.'
-    }
 }
