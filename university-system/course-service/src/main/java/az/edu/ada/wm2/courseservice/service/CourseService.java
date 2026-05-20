@@ -216,4 +216,41 @@ public class CourseService {
                 course.getPrerequisiteCourseId()
         );
     }
+    public List<CourseResponseDto> getCoursesByStudentName(String studentName) {
+
+        StudentDto[] students = restTemplate.getForObject(
+                studentServiceBaseUrl + "/api/v1/students",
+                StudentDto[].class
+        );
+
+        if (students == null) {
+            throw new RuntimeException("No students found.");
+        }
+
+        StudentDto matchedStudent = null;
+
+        for (StudentDto student : students) {
+            if ((student.getFirstName() + " " + student.getLastName())
+                    .equalsIgnoreCase(studentName)){
+                matchedStudent = student;
+                break;
+            }
+        }
+
+        if (matchedStudent == null) {
+            throw new RuntimeException("Student not found.");
+        }
+
+        Long studentId = matchedStudent.getId();
+
+        List<Long> courseIds = enrollmentRepository.findByStudentId(studentId)
+                .stream()
+                .map(Enrollment::getCourseId)
+                .toList();
+
+        return courseRepository.findAllById(courseIds)
+                .stream()
+                .map(this::toCourseResponseDto)
+                .toList();
+    }
 }

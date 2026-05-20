@@ -83,4 +83,9 @@ public class CourseController {
     public ResponseEntity<CourseStudentsResponseDto> getCourseStudents(@PathVariable Long courseId) {
         return ResponseEntity.ok(courseService.getCourseStudents(courseId));
     }
+
+    @GetMapping("/student-name/{name}")
+    public List<CourseResponseDto> getCourseStudentByName(@PathVariable String name) {
+        return courseService.getCoursesByStudentName(name);
+    }
 }
